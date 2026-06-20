@@ -9,7 +9,7 @@ public class WhatsUTServer {
         try {
             IAuthService authService = new AuthService();
 
-            Registry registry = LocateRegistry.createRegistry(1919);
+            Registry registry = LocateRegistry.createRegistry(1920);
             
             registry.rebind("AuthService", authService);
 

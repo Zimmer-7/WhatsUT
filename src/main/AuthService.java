@@ -2,17 +2,21 @@ package main;
 
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class AuthService extends UnicastRemoteObject implements IAuthService {
     
 	private static final long serialVersionUID = 1L;
 	private final Map<String, String> bancoUsuarios;
+	private List<String> usuariosOnline;
 
     public AuthService() throws RemoteException {
         super();
         this.bancoUsuarios = new HashMap<>();
+        this.usuariosOnline = new ArrayList<>();
     }
 
     @Override
@@ -30,7 +34,7 @@ public class AuthService extends UnicastRemoteObject implements IAuthService {
 
     @Override
     public synchronized boolean login(String username, String password) throws RemoteException {
-        if (!bancoUsuarios.containsKey(username)) {
+    	if (!bancoUsuarios.containsKey(username)) {
             System.out.println("Tentativa de login: Usuário não encontrado -> " + username);
             return false;
         }
@@ -38,9 +42,21 @@ public class AuthService extends UnicastRemoteObject implements IAuthService {
         String senhaFornecidaHash = SecurityUtils.hashPassword(password);
         String senhaArmazenadaHash = bancoUsuarios.get(username);
 
-        boolean autenticado = senhaArmazenadaHash.equals(senhaFornecidaHash);
-        System.out.println("Tentativa de login para [" + username + "]: " + (autenticado ? "SUCESSO" : "FALHOU"));
+        if (!senhaArmazenadaHash.equals(senhaFornecidaHash)) {
+            System.out.println("Senha invalida");
+            return false;
+        }
         
-        return autenticado;
+        if (!usuariosOnline.contains(username)) {
+            usuariosOnline.add(username);
+        }
+        
+        return true;
+    }
+
+    @Override
+    public synchronized List<String> getUsuariosOnline() throws RemoteException {
+        // Retorna uma cópia para evitar concorrência
+        return new ArrayList<>(usuariosOnline);
     }
 }
