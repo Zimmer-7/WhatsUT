@@ -24,7 +24,6 @@ public interface IAuthService extends Remote {
     void enviarMensagemGrupo(String de, String grupo, String msg) throws RemoteException;
     List<String> lerNovasMensagens(String username) throws RemoteException; // Polling simplificado de chat
     
-    // Envio de arquivos (Requisito 5)
     boolean enviarArquivoPrivado(String de, String para, String nomeArquivo, byte[] conteudo) throws RemoteException;
     List<ArquivoMensagem> baixarArquivosNovos(String username) throws RemoteException;
 

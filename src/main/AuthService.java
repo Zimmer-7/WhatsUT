@@ -13,10 +13,9 @@ public class AuthService extends UnicastRemoteObject implements IAuthService {
     private final Map<String, String> bancoUsuarios;
     private final List<String> usuariosOnline;
 
-    // Novas estruturas de dados para Chat e Grupos
     private final Map<String, Grupo> bancoGrupos;
-    private final Map<String, List<String>> caixasDeMensagem; // usuário -> lista de mensagens pendentes
-    private final Map<String, List<ArquivoMensagem>> caixasDeArquivos; // usuário -> lista de arquivos recebidos
+    private final Map<String, List<String>> caixasDeMensagem;
+    private final Map<String, List<ArquivoMensagem>> caixasDeArquivos;
 
     public AuthService() throws RemoteException {
         super();
@@ -111,7 +110,8 @@ public class AuthService extends UnicastRemoteObject implements IAuthService {
     @Override
     public synchronized void enviarMensagemPrivada(String de, String para, String msg) throws RemoteException {
         if (caixasDeMensagem.containsKey(para)) {
-            caixasDeMensagem.get(para).add("[Privado de " + de + "]: " + msg);
+            // Formato estruturado: PV ; Remetente ; Conteúdo
+            caixasDeMensagem.get(para).add("PV;" + de + ";" + msg);
         }
     }
 
@@ -121,9 +121,11 @@ public class AuthService extends UnicastRemoteObject implements IAuthService {
         if (grupo != null && grupo.getMembros().contains(de)) {
             for (String membro : grupo.getMembros()) {
                 if (!membro.equals(de) && caixasDeMensagem.containsKey(membro)) {
-                    caixasDeMensagem.get(membro).add("[" + nomeGrupo + " -> " + de + "]: " + msg);
+                    // Formato estruturado: GR ; NomeDoGrupo ; Remetente ; Conteúdo
+                    caixasDeMensagem.get(membro).add("GR;" + nomeGrupo + ";" + de + ";" + msg);
                 }
             }
+            
         }
     }
 
@@ -155,15 +157,13 @@ public class AuthService extends UnicastRemoteObject implements IAuthService {
 
     @Override
     public synchronized boolean requisitarBanimentoAplicacao(String solicitante, String usuarioAserBanido) throws RemoteException {
-        // Regra simples: Qualquer um pode banir (ou você pode adicionar uma votação). 
-        // Para simplificar o escopo do exercício, removemos ele do sistema.
+       
         if (bancoUsuarios.containsKey(usuarioAserBanido)) {
             bancoUsuarios.remove(usuarioAserBanido);
             usuariosOnline.remove(usuarioAserBanido);
             caixasDeMensagem.remove(usuarioAserBanido);
             caixasDeArquivos.remove(usuarioAserBanido);
             
-            // Remove o usuário de todos os grupos
             for (Grupo g : bancoGrupos.values()) {
                 g.getMembros().remove(usuarioAserBanido);
                 g.getSolicitacoesPendentes().remove(usuarioAserBanido);

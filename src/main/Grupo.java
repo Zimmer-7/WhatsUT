@@ -11,7 +11,7 @@ public class Grupo implements Serializable {
     private String criador; // Administrador atual
     private List<String> membros;
     private List<String> solicitacoesPendentes;
-    private boolean eliminarSeAdminSair; // Requisito 6
+    private boolean eliminarSeAdminSair;
 
     public Grupo(String nome, String criador, boolean eliminarSeAdminSair) {
         this.nome = nome;
